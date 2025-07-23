@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Bug, LogOut } from 'lucide-react';
+import { ArrowLeft, Bug, LogOut, Users, LayoutDashboard } from 'lucide-react';
 import { KanbanBoard } from '@/components/KanbanBoard';
+import { TeamManagement } from '@/components/TeamManagement';
 
 interface Project {
   id: string;
@@ -23,6 +25,7 @@ export default function Project() {
   const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -62,6 +65,7 @@ export default function Project() {
       }
 
       setProject(data);
+      setIsOwner(data.owner_id === user?.id);
     } catch (error) {
       console.error('Error fetching project:', error);
       toast({
@@ -125,15 +129,43 @@ export default function Project() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold tracking-tight mb-2">Project Board</h2>
-          <p className="text-muted-foreground">
-            Drag and drop issues between columns to update their status
-          </p>
-        </div>
-
         {user && (
-          <KanbanBoard projectId={project.id} userId={user.id} />
+          <Tabs defaultValue="board" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="board" className="flex items-center space-x-2">
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Board</span>
+              </TabsTrigger>
+              <TabsTrigger value="team" className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>Team</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="board" className="space-y-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Project Board</h2>
+                <p className="text-muted-foreground">
+                  Drag and drop issues between columns to update their status
+                </p>
+              </div>
+              <KanbanBoard projectId={project.id} userId={user.id} />
+            </TabsContent>
+            
+            <TabsContent value="team" className="space-y-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Team Management</h2>
+                <p className="text-muted-foreground">
+                  Invite team members and manage project collaboration
+                </p>
+              </div>
+              <TeamManagement 
+                projectId={project.id} 
+                userId={user.id} 
+                isOwner={isOwner}
+              />
+            </TabsContent>
+          </Tabs>
         )}
       </main>
     </div>
