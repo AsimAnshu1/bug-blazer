@@ -73,7 +73,10 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2 flex-1">
-            <StatusIcon className="h-4 w-4 text-muted-foreground" />
+            <StatusIcon 
+              className="h-4 w-4 text-muted-foreground" 
+              onClick={(e) => e.stopPropagation()}
+            />
             <h4 className="font-medium text-sm line-clamp-2">{issue.title}</h4>
           </div>
           <DropdownMenu>
