@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Edit, Trash2, AlertCircle, Circle, CheckCircle2 } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, AlertCircle, Circle, CheckCircle2, User } from 'lucide-react';
 
 interface Issue {
   id: string;
@@ -116,9 +116,16 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
           <Badge variant="secondary" className={`text-xs ${priorityInfo.color} text-white`}>
             {priorityInfo.label}
           </Badge>
-          <span className="text-xs text-muted-foreground">
-            {new Date(issue.created_at).toLocaleDateString()}
-          </span>
+          <div className="flex items-center space-x-2">
+            {issue.assignee_id && (
+              <div className="flex items-center space-x-1" title="Assigned to team member">
+                <User className="h-3 w-3 text-muted-foreground" />
+              </div>
+            )}
+            <span className="text-xs text-muted-foreground">
+              {new Date(issue.created_at).toLocaleDateString()}
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

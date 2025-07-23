@@ -213,6 +213,7 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
             title: issueData.title!,
             description: issueData.description || '',
             priority: issueData.priority || 'medium',
+            assignee_id: issueData.assignee_id || null,
             project_id: projectId,
             column_id: selectedColumnId!,
             reporter_id: userId,
@@ -322,6 +323,7 @@ export function KanbanBoard({ projectId, userId }: KanbanBoardProps) {
         onOpenChange={setIsDialogOpen}
         issue={selectedIssue}
         onSubmit={handleIssueSubmit}
+        projectId={projectId}
       />
     </>
   );
