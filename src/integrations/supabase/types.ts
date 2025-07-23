@@ -241,6 +241,14 @@ export type Database = {
         Args: { invitation_token: string }
         Returns: Json
       }
+      is_project_member: {
+        Args: { project_id_param: string }
+        Returns: boolean
+      }
+      is_project_owner: {
+        Args: { project_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       member_role: "owner" | "contributor"
