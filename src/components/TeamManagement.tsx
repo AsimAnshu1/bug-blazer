@@ -77,18 +77,42 @@ export function TeamManagement({ projectId, userId, isOwner }: TeamManagementPro
 
       const membersWithProfiles = await Promise.all(profilesPromises);
 
-      // Fetch pending invitations
-      const { data: invitationsData, error: invitationsError } = await supabase
-        .from('project_invitations')
-        .select('id, email, role, created_at, expires_at')
-        .eq('project_id', projectId)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString());
+      // If no members found but user is the owner, add them to the list
+      if (membersWithProfiles.length === 0 && isOwner) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      if (invitationsError) throw invitationsError;
+        membersWithProfiles.push({
+          id: 'owner-' + userId,
+          user_id: userId,
+          role: 'owner' as const,
+          joined_at: new Date().toISOString(),
+          profiles: profile
+        });
+      }
+
+      // Try to fetch pending invitations, but don't fail if there's an error
+      let invitationsData = [];
+      try {
+        const { data, error: invitationsError } = await supabase
+          .from('project_invitations')
+          .select('id, email, role, created_at, expires_at')
+          .eq('project_id', projectId)
+          .is('accepted_at', null)
+          .gt('expires_at', new Date().toISOString());
+
+        if (!invitationsError) {
+          invitationsData = data || [];
+        }
+      } catch (invError) {
+        console.log('Could not fetch invitations:', invError);
+      }
 
       setMembers(membersWithProfiles as TeamMember[]);
-      setPendingInvitations((invitationsData || []).map(inv => ({
+      setPendingInvitations(invitationsData.map(inv => ({
         ...inv,
         invited_at: inv.created_at
       })) as PendingInvitation[]);
