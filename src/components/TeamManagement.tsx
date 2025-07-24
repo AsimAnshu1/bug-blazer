@@ -133,34 +133,69 @@ export function TeamManagement({ projectId, userId, isOwner }: TeamManagementPro
 
     setIsInviting(true);
     try {
-      const { error } = await supabase
+      // First, revoke any existing pending invitations for this email
+      await supabase
+        .from('project_invitations')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('email', inviteEmail.trim().toLowerCase())
+        .is('accepted_at', null);
+
+      // Create new invitation
+      const { data: invitationData, error: insertError } = await supabase
         .from('project_invitations')
         .insert({
           project_id: projectId,
           email: inviteEmail.trim().toLowerCase(),
           role: inviteRole,
           invited_by: userId,
-        });
+        })
+        .select('token')
+        .single();
 
-      if (error) {
-        if (error.code === '23505') {
-          toast({
-            title: "Error",
-            description: "User has already been invited to this project",
-            variant: "destructive",
-          });
-        } else {
-          throw error;
-        }
+      if (insertError) throw insertError;
+
+      // Get project and inviter details
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', projectId)
+        .single();
+
+      const { data: inviterData } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', userId)
+        .single();
+
+      // Send invitation email
+      const { error: emailError } = await supabase.functions.invoke('send-invitation', {
+        body: {
+          email: inviteEmail.trim().toLowerCase(),
+          role: inviteRole,
+          projectName: projectData?.name || 'Project',
+          inviterName: inviterData?.full_name || 'Someone',
+          invitationToken: invitationData.token,
+        },
+      });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+        toast({
+          title: "Warning",
+          description: "Invitation created but email could not be sent. Please check your email configuration.",
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Invitation sent",
-          description: `Invitation sent to ${inviteEmail}`,
+          description: `Invitation email sent to ${inviteEmail}`,
         });
-        setInviteEmail('');
-        setIsDialogOpen(false);
-        fetchTeamData();
       }
+      
+      setInviteEmail('');
+      setIsDialogOpen(false);
+      fetchTeamData();
     } catch (error) {
       console.error('Error inviting user:', error);
       toast({
