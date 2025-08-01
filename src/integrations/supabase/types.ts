@@ -241,6 +241,10 @@ export type Database = {
         Args: { invitation_token: string }
         Returns: Json
       }
+      get_current_user_email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_project_member: {
         Args: { project_id_param: string }
         Returns: boolean
