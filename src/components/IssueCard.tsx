@@ -94,9 +94,9 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
         isDragging ? 'opacity-50 shadow-lg' : ''
       }`}
       {...attributes}
-      {...listeners}
     >
-      <CardHeader className="pb-2">
+      <div {...listeners}>
+        <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2 flex-1">
             <StatusIcon 
@@ -111,18 +111,31 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
                 variant="ghost" 
                 size="sm" 
                 className="h-6 w-6 p-0"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+              <DropdownMenuItem 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  e.preventDefault();
+                  onEdit(); 
+                }}
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  e.preventDefault();
+                  onDelete(); 
+                }}
                 className="text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -131,7 +144,8 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
+        </CardHeader>
+      </div>
       <CardContent className="pt-0">
         {issue.description && (
           <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
