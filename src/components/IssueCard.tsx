@@ -90,18 +90,19 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`cursor-grab active:cursor-grabbing transition-all hover:shadow-md ${
+      className={`transition-all hover:shadow-md ${
         isDragging ? 'opacity-50 shadow-lg' : ''
       }`}
       {...attributes}
     >
-      <div {...listeners}>
         <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-2 flex-1">
+          <div 
+            className="flex items-center space-x-2 flex-1 cursor-grab active:cursor-grabbing"
+            {...listeners}
+          >
             <StatusIcon 
               className="h-4 w-4 text-muted-foreground" 
-              onClick={(e) => e.stopPropagation()}
             />
             <h4 className="font-medium text-sm line-clamp-2">{issue.title}</h4>
           </div>
@@ -145,8 +146,7 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
           </DropdownMenu>
         </div>
         </CardHeader>
-      </div>
-      <CardContent className="pt-0">
+        <CardContent className="pt-0">
         {issue.description && (
           <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
             {issue.description}
