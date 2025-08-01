@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Edit, Trash2, AlertCircle, Circle, CheckCircle2, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Issue {
   id: string;
@@ -41,6 +43,7 @@ const statusIcons = {
 };
 
 export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
+  const [assigneeName, setAssigneeName] = useState<string>('');
   const {
     attributes,
     listeners,
@@ -51,6 +54,29 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
   } = useSortable({
     id: issue.id,
   });
+
+  useEffect(() => {
+    if (issue.assignee_id) {
+      fetchAssigneeName();
+    }
+  }, [issue.assignee_id]);
+
+  const fetchAssigneeName = async () => {
+    if (!issue.assignee_id) return;
+    
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', issue.assignee_id)
+        .maybeSingle();
+      
+      setAssigneeName(data?.full_name || 'Unknown User');
+    } catch (error) {
+      console.error('Error fetching assignee name:', error);
+      setAssigneeName('Unknown User');
+    }
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -117,9 +143,12 @@ export function IssueCard({ issue, onEdit, onDelete }: IssueCardProps) {
             {priorityInfo.label}
           </Badge>
           <div className="flex items-center space-x-2">
-            {issue.assignee_id && (
-              <div className="flex items-center space-x-1" title="Assigned to team member">
+            {issue.assignee_id && assigneeName && (
+              <div className="flex items-center space-x-1" title={`Assigned to ${assigneeName}`}>
                 <User className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground truncate max-w-20">
+                  {assigneeName}
+                </span>
               </div>
             )}
             <span className="text-xs text-muted-foreground">
