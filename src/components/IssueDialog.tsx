@@ -60,12 +60,12 @@ export function IssueDialog({ open, onOpenChange, issue, onSubmit, projectId }: 
       setTitle(issue.title);
       setDescription(issue.description || '');
       setPriority(issue.priority);
-      setAssigneeId(issue.assignee_id || '');
+      setAssigneeId(issue.assignee_id || 'unassigned');
     } else {
       setTitle('');
       setDescription('');
       setPriority('medium');
-      setAssigneeId('');
+      setAssigneeId('unassigned');
     }
   }, [issue, open]);
 
@@ -114,7 +114,7 @@ export function IssueDialog({ open, onOpenChange, issue, onSubmit, projectId }: 
         title,
         description,
         priority,
-        assignee_id: assigneeId || null,
+        assignee_id: assigneeId === 'unassigned' ? null : assigneeId,
       });
       onOpenChange(false);
     } catch (error) {
@@ -189,7 +189,7 @@ export function IssueDialog({ open, onOpenChange, issue, onSubmit, projectId }: 
             <Select value={assigneeId} onValueChange={setAssigneeId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select assignee (optional)">
-                  {assigneeId ? (
+                  {assigneeId && assigneeId !== 'unassigned' ? (
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4" />
                       <span>
@@ -202,7 +202,7 @@ export function IssueDialog({ open, onOpenChange, issue, onSubmit, projectId }: 
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No assignee</SelectItem>
+                <SelectItem value="unassigned">No assignee</SelectItem>
                 {teamMembers.map((member) => (
                   <SelectItem key={member.user_id} value={member.user_id}>
                     <div className="flex items-center space-x-2">
